@@ -8,5 +8,8 @@
     "uuid": "^10.0.0",
     "youtube-dl-exec": "^3.0.7",
     "ytdl-core": "^4.11.5"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
