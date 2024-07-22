@@ -7,7 +7,7 @@ const sanitize = require('sanitize-filename');
 const app = express();
 const PORT = process.env.PORT || 8774;
 
-const ytDlpPath = 'C:\\Users\\uwufo\\OneDrive\\Documents\\yt-dlp_win\\yt-dlp.exe';
+const ytDlpPath = './yt-dlp_linux';
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
