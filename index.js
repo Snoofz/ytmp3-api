@@ -21,8 +21,9 @@ app.get('/api/ytmp3', async (req, res) => {
 
     try {
         const info = await ytdl.getInfo(url);
-        const title = sanitize(info.videoDetails.title || 'audio');
+        let title = sanitize(info.videoDetails.title || 'audio');
 
+        title = encodeURIComponent(title);
         res.setHeader('Content-Disposition', `attachment; filename="${title}.mp3"`);
         res.setHeader('Content-Type', 'audio/mpeg');
 
