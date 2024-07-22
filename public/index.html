@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTMP3 - Snoofz</title>
+    <style>
+        /* Reset and basic styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5em;
+}
+
+header p {
+    font-size: 1.2em;
+}
+
+#uwubg {
+    background-color: #212222;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.fade-effect {
+    animation: fadeIn 1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.overlay-text {
+    color: white;
+    font-size: 55px;
+    text-align: center;
+}
+
+body {
+    overflow: hidden;
+}
+
+main {
+    padding: 40px 0;
+}
+
+.about, .skills, .projects {
+    padding: 40px 0;
+}
+
+.about h2, .skills h2, .projects h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.projects ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.projects li {
+    margin-bottom: 10px;
+}
+
+.projects a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.projects a:hover {
+    color: #0056b3;
+}
+
+footer {
+    background-color: #343a40;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+}
+
+footer p {
+    font-size: 0.9em;
+}
+
+    </style>
+</head>
+<body id="uwubg">
+    <div class="overlay" id="overlay" onclick="hideOverlay()"><span class="fade-effect">Click to continue</span></div>
+  <script>
+class UIManager {
+    constructor() {
+        this.UIContext = null;
+        this.UIMenus = [];
+        this.tabs = [];
+        this.notificationStack = []; // Track notifications for stacking
+        this.notificationHeight = 100; // Default notification height
+        this.notificationMargin = 10; // Margin between notifications
+    }
+
+    getAllTabs() {
+        return this.tabs;
+    }
+
+    createNotification(titleText, descriptionText, duration) {
+        const notificationContainer = document.createElement('div');
+        notificationContainer.className = 'notification-popup';
+        notificationContainer.style.position = 'fixed';
+        notificationContainer.style.left = '10px';
+        notificationContainer.style.bottom = this.calculateNotificationBottom() + 'px';
+        notificationContainer.style.transform = 'translateY(100%)';
+        notificationContainer.style.backgroundColor = '#0e0e0e';
+        notificationContainer.style.color = '#ffffff';
+        notificationContainer.style.width = '300px';
+        notificationContainer.style.padding = '20px';
+        notificationContainer.style.borderRadius = '8px';
+        notificationContainer.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.5)'; // Darker shadow
+        notificationContainer.style.zIndex = '9999';
+        notificationContainer.style.transition = 'transform 0.3s ease-in-out';
+
+        const title = document.createElement('h2');
+        title.textContent = titleText;
+        title.style.fontSize = '22px';
+        title.style.textAlign = 'center';
+        title.style.marginBottom = '10px';
+        title.classList.add('flicker-animation'); // Add rainbow animation class
+
+        const description = document.createElement('p');
+        description.textContent = descriptionText;
+        description.style.fontSize = '16px';
+        description.style.textAlign = 'center';
+        description.classList.add('flicker-animation'); // Add rainbow animation class
+
+        notificationContainer.appendChild(title);
+        notificationContainer.appendChild(description);
+
+        document.body.appendChild(notificationContainer);
+
+        setTimeout(() => {
+            notificationContainer.style.transform = 'translateY(0)';
+        }, 50);
+
+        setTimeout(() => {
+            notificationContainer.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+                this.removeNotification(notificationContainer);
+                document.body.removeChild(notificationContainer);
+            }, 300);
+        }, duration);
+
+        this.makeDraggable(notificationContainer);
+
+        this.notificationStack.push(notificationContainer);
+    }
+
+    calculateNotificationBottom() {
+        let totalHeight = this.notificationMargin;
+        this.notificationStack.forEach(notification => {
+            totalHeight += notification.offsetHeight + this.notificationMargin;
+        });
+        return totalHeight;
+    }
+
+    removeNotification(notification) {
+        const index = this.notificationStack.indexOf(notification);
+        if (index !== -1) {
+            this.notificationStack.splice(index, 1);
+        }
+        this.repositionNotifications();
+    }
+
+    repositionNotifications() {
+        let totalHeight = this.notificationMargin;
+        this.notificationStack.forEach(notification => {
+            notification.style.bottom = totalHeight + 'px';
+            totalHeight += notification.offsetHeight + this.notificationMargin;
+        });
+    }
+
+    createMenu(elementId, titleText, width = '300px', height = 'auto') {
+        const container = document.createElement('div');
+        container.id = elementId;
+        container.style.position = 'fixed';
+        container.style.backgroundColor = '#0e0e0e'; // Darker red background
+        container.style.borderRadius = '8px';
+        container.style.padding = '20px';
+        container.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.5)'; // Darker shadow
+        container.style.zIndex = '9999';
+        container.style.width = width;
+        container.style.height = height;
+
+        container.style.top = `calc(50% - (${height} / 2))`;
+        container.style.left = `calc(50% - (${width} / 2))`;
+
+        container.style.userSelect = 'none';
+
+        container.style.overflowY = 'auto';
+        container.className = 'custom-scrollbar';
+
+        const title = document.createElement('h2');
+        title.textContent = titleText;
+        title.style.color = '#ffffff'; // White text color
+        title.style.marginBottom = '20px';
+        title.style.fontSize = '22px';
+        title.style.textAlign = 'center';
+        title.style.marginTop = '0px';
+        title.classList.add('flicker-animation');
+
+        container.appendChild(title);
+
+        document.body.appendChild(container);
+
+        this.UIContext = container;
+
+        return container;
+    }
+
+    makeDraggable(element) {
+        let offsetX, offsetY;
+
+        function handleMouseDown(event) {
+            event.preventDefault(); // Prevent default behavior (e.g., text selection)
+            const boundingRect = element.getBoundingClientRect();
+            offsetX = event.clientX - boundingRect.left;
+            offsetY = event.clientY - boundingRect.top;
+
+            console.log(`x: ${event.clientX}, y: ${event.clientY}, Offsetx: ${offsetX}, Offsety: ${offsetY}`)
+
+            // Add event listeners for mouse move and mouse up events
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        function handleMouseMove(event) {
+            moveElement(event.clientX, event.clientY);
+        }
+
+        function moveElement(clientX, clientY) {
+            element.style.left = clientX - offsetX + 'px';
+            element.style.top = clientY - offsetY + 'px';
+        }
+
+        function handleMouseUp() {
+            cleanupListeners();
+        }
+
+        function handleTouchEnd() {
+            cleanupListeners();
+        }
+
+        function cleanupListeners() {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        const titleBar = element.querySelector('h2');
+        titleBar.addEventListener('mousedown', handleMouseDown);
+
+        // CSS to ensure smooth dragging and prevent text selection
+        element.style.position = 'absolute';
+        titleBar.style.cursor = 'move';
+        titleBar.style.userSelect = 'none'; // Prevent text selection on title bar
+    }
+
+    addButton(buttonText, buttonAction) {
+        const button = document.createElement('button');
+        button.style.width = '100%';
+        button.style.padding = '10px';
+        button.style.backgroundColor = '#1c1c1c'; // Bright red background
+        button.style.color = '#ffffff'; // White text color
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.cursor = 'pointer';
+        button.style.marginBottom = '10px';
+        button.style.fontWeight = 'bold';
+        button.style.fontSize = '16px';
+        button.addEventListener('click', buttonAction);
+        button.classList.add('flicker-animation'); // Add rainbow animation class
+
+        const buttonTextSpan = document.createElement('span');
+        buttonTextSpan.textContent = buttonText;
+        button.appendChild(buttonTextSpan);
+
+        this.UIContext.appendChild(button);
+
+        return button;
+    }
+
+    addLabel(labelText, color) {
+        const label = document.createElement('h3');
+        label.textContent = labelText;
+        label.id = labelText + Math.floor(Math.random() * 120) + 1;
+        label.style.color = color;
+        label.style.marginBottom = '20px';
+        label.style.fontSize = '18px';
+        label.style.textAlign = 'center';
+        if (color == "flicker-animation") {
+            label.classList.add('flicker-animation');
+        }
+
+        this.UIContext.appendChild(label);
+
+        return label;
+    }
+
+    addSpacer(height) {
+        const spacer = document.createElement('div');
+        spacer.style.width = '100%';
+        spacer.style.height = `${height}px`;
+        spacer.style.marginBottom = `${height}px`;
+
+        this.UIContext.appendChild(spacer);
+
+        return spacer;
+    }
+
+    addTextInput(placeholderText, valueChangeAction) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = placeholderText;
+        input.style.width = 'calc(100% - 1px)';
+        input.style.padding = '10px';
+        input.style.marginBottom = '20px';
+        input.style.borderRadius = '5px';
+        input.addEventListener('input', valueChangeAction);
+        input.style.backgroundColor = '#0e0e0e'; // White text color
+        input.classList.add('flicker-animation'); // Add rainbow animation class
+        input.focus();
+
+        this.UIContext.appendChild(input);
+        input.focus();
+
+        return input;
+    }
+
+    addSlider(min, max, step, currentValue, valueChangeAction) {
+        const sliderContainer = document.createElement('div');
+        sliderContainer.style.width = 'calc(100% - 20px)';
+        sliderContainer.style.marginBottom = '20px';
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = min;
+        slider.max = max;
+        slider.value = currentValue;
+        slider.step = step;
+        slider.style.width = '100%';
+        slider.style.borderRadius = '5px';
+        slider.addEventListener('input', valueChangeAction);
+
+        sliderContainer.appendChild(slider);
+        this.UIContext.appendChild(sliderContainer);
+
+        return slider;
+    }
+
+    addLogo(src) {
+        const logo = document.createElement('img');
+        logo.src = src;
+        logo.className = 'logo';
+        logo.alt = 'Logo';
+        logo.style.marginLeft = '39%';
+
+        this.UIContext.insertBefore(logo, this.UIContext.firstChild);
+
+        return logo;
+    }
+
+    createTabMenu(tabs) {
+        const tabContainer = document.createElement('div');
+        tabContainer.style.display = 'flex';
+        tabContainer.style.borderBottom = '1px solid #cc0000'; // Bright red border
+        tabContainer.style.marginBottom = '20px';
+        tabContainer.classList.add('flicker-animation')
+
+        const contentContainers = tabs.map(() => document.createElement('div'));
+
+        tabs.forEach((tab, index) => {
+            const tabButton = document.createElement('button');
+            tabButton.textContent = tab.title;
+            tabButton.style.flex = '1';
+            tabButton.style.padding = '10px';
+            tabButton.style.backgroundColor = '#1c1c1c'; // Dark red background
+            tabButton.style.color = '#ffffff'; // White text color
+            tabButton.style.border = 'none';
+            tabButton.style.cursor = 'pointer';
+            tabButton.style.fontWeight = 'bold';
+            tabButton.style.fontSize = '16px';
+            tabButton.classList.add('flicker-animation'); // Add rainbow animation class
+
+            tabButton.addEventListener('click', () => {
+                contentContainers.forEach((container, idx) => {
+                    if (idx !== index) {
+                        container.style.display = 'none';
+                    }
+                });
+                contentContainers[index].style.display = 'block';
+            });
+
+            this.tabs.push(tabButton);
+            tabContainer.appendChild(tabButton);
+
+            const uiTab = new UITab(tab.title, contentContainers[index], document.createElement('div'));
+            uiTab.content.innerHTML = tab.content;
+            tab.uiTab = uiTab;
+        });
+
+        this.UIContext.appendChild(tabContainer);
+
+        contentContainers.forEach(container => {
+            container.style.display = 'none';
+            this.UIContext.appendChild(container);
+        });
+
+        if (contentContainers.length > 0) {
+            contentContainers[0].style.display = 'block';
+        }
+
+        return { UITabs: tabs, Containers: contentContainers };
+    }
+
+    addTabsToTabMenu(existingTabs, newTabs) {
+        const contentContainers = newTabs.map(() => document.createElement('div'));
+
+        newTabs.forEach((tab, index) => {
+            const tabButton = document.createElement('button');
+            tabButton.textContent = tab.title;
+            tabButton.style.flex = '1';
+            tabButton.style.padding = '10px';
+            tabButton.style.backgroundColor = '#1c1c1c'; // Dark red background
+            tabButton.style.color = '#ffffff'; // White text color
+            tabButton.style.border = 'none';
+            tabButton.style.cursor = 'pointer';
+            tabButton.style.fontWeight = 'bold';
+            tabButton.style.fontSize = '16px';
+            tabButton.classList.add('flicker-animation'); // Add rainbow animation class
+
+            tabButton.addEventListener('click', () => {
+                contentContainers.forEach((container, idx) => {
+                    if (idx !== index) {
+                        container.style.display = 'none';
+                    }
+                });
+                contentContainers[index].style.display = 'block';
+            });
+
+            existingTabs.push(tabButton);
+            const uiTab = new UITab(tab.title, contentContainers[index], document.createElement('div'));
+            uiTab.content.innerHTML = tab.content;
+            tab.uiTab = uiTab;
+        });
+
+        existingTabs.forEach(tab => {
+            this.UIContext.appendChild(tab);
+        });
+
+        contentContainers.forEach(container => {
+            container.style.display = 'none';
+            this.UIContext.appendChild(container);
+        });
+
+        if (contentContainers.length > 0) {
+            contentContainers[0].style.display = 'block';
+        }
+    }
+
+    showTabContent(index, tabs, contentContainer) {
+        contentContainer.innerHTML = '';
+
+        const content = document.createElement('div');
+        content.innerHTML = tabs[index].content;
+        content.style.color = '#ffffff'; // White text color
+        content.style.fontSize = '16px';
+        contentContainer.appendChild(content);
+
+        this.activeTabContent = content;
+    }
+}
+
+class UITab {
+    constructor(title, contentContainer, content) {
+        this.title = title;
+        this.contentContainer = contentContainer;
+        this.content = content;
+        this.isHidden = true;
+    }
+
+    static getContentContainer() {
+        return this.contentContainer;
+    }
+
+    addButton(buttonText, buttonAction) {
+        const button = document.createElement('button');
+        button.style.width = '100%';
+        button.style.padding = '10px';
+        button.style.backgroundColor = '#1c1c1c'; // Bright red background
+        button.style.color = '#ffffff'; // White text color
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.cursor = 'pointer';
+        button.style.marginBottom = '10px';
+        button.style.fontWeight = 'bold';
+        button.style.fontSize = '16px';
+        button.addEventListener('click', buttonAction);
+        button.classList.add('flicker-animation'); // Add rainbow animation class
+
+        const buttonTextSpan = document.createElement('span');
+        buttonTextSpan.textContent = buttonText;
+        button.appendChild(buttonTextSpan);
+
+        this.contentContainer.appendChild(button);
+
+        return button;
+    }
+
+    addLabel(labelText, color) {
+        const label = document.createElement('h3');
+        label.innerHTML = labelText;
+        label.id = labelText + Math.floor(Math.random() * 120) + 1;
+        label.style.color = color; // White text color
+        label.style.marginBottom = '20px';
+        label.style.fontSize = '18px';
+        label.style.textAlign = 'center';
+        if (color == "flicker-animation") {
+            label.classList.add('flicker-animation');
+        }
+        this.contentContainer.appendChild(label);
+        
+
+        return label;
+    }
+
+    addTextInput(placeholderText, valueChangeAction) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = placeholderText;
+        input.style.width = 'calc(100% - 1px)';
+        input.style.padding = '10px';
+        input.style.marginBottom = '20px';
+        input.style.borderRadius = '5px';
+        input.addEventListener('input', valueChangeAction);
+        input.style.backgroundColor = '#0e0e0e'; // White text color
+        input.classList.add('flicker-animation'); // Add rainbow animation class
+        input.focus();
+        this.contentContainer.appendChild(input);
+        input.focus();
+        return input;
+    }
+
+    addSpacer(height) {
+        const spacer = document.createElement('div');
+        spacer.style.width = '100%';
+        spacer.style.height = `${height}px`;
+        spacer.style.marginBottom = `${height}px`;
+
+        this.contentContainer.appendChild(spacer);
+
+        return spacer;
+    }
+
+    addSlider(min, max, step, currentValue, customText, valueChangeAction) {
+        let textBubble = undefined;
+        let hideTimeout = null;
+    
+        const sliderContainer = document.createElement('div');
+        sliderContainer.style.width = 'calc(100% - 1px)';
+        sliderContainer.style.marginBottom = '20px';
+        sliderContainer.style.position = 'relative';
+    
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = min;
+        slider.max = max;
+        slider.value = currentValue;
+        slider.step = step;
+        slider.style.width = '100%';
+        slider.style.borderRadius = '5px';
+    
+        const showBubble = () => {
+            clearTimeout(hideTimeout);
+            textBubble.style.opacity = 1;
+            hideTimeout = setTimeout(() => {
+                textBubble.style.opacity = 0;
+            }, 3000);
+        };
+    
+        slider.addEventListener('input', () => {
+            valueChangeAction(slider.value);
+            textBubble.textContent = `${customText}: ${slider.value}`;
+            const sliderWidth = slider.offsetWidth;
+            const bubbleWidth = textBubble.offsetWidth;
+            const sliderValue = slider.value;
+            const newPosition = (sliderValue / (max - min)) * sliderWidth;
+            const adjustedPosition = Math.min(Math.max(newPosition, bubbleWidth / 2), sliderWidth - bubbleWidth / 2);
+            textBubble.style.left = `${adjustedPosition}px`;
+            showBubble();
+        });
+    
+        slider.addEventListener('mousedown', showBubble);
+        slider.addEventListener('touchstart', showBubble);
+    
+        slider.classList.add('flicker-animation');
+    
+        const bubble = document.createElement('div');
+        bubble.style.position = 'absolute';
+        bubble.style.top = 'calc(100% + 10px)';
+        bubble.style.left = '50%';
+        bubble.style.transform = 'translateX(-50%)';
+        bubble.style.backgroundColor = '#f0f0f0';
+        bubble.style.padding = '5px 10px';
+        bubble.style.borderRadius = '5px';
+        bubble.style.backgroundColor = '#181818';
+        bubble.style.whiteSpace = 'nowrap';
+        bubble.style.minWidth = '100px';
+        bubble.style.transition = 'opacity 0.5s'; // Add transition for fade effect
+        bubble.style.opacity = 0; // Initially hidden
+        bubble.textContent = `${customText}: ${currentValue}`;
+        textBubble = bubble;
+    
+        sliderContainer.appendChild(bubble);
+        sliderContainer.appendChild(slider);
+    
+        this.contentContainer.appendChild(sliderContainer);
+    
+        return slider;
+    }
+    
+    
+    showContent() {
+        const allTabs = this.contentContainer.parentElement.querySelectorAll('.tab-content');
+        allTabs.forEach(tab => {
+            tab.style.display = 'none';
+        });
+
+        if (this.isHidden) {
+            this.contentContainer.style.display = 'block';
+            this.isHidden = false;
+        }
+    }
+}
+
+function appendCustomScrollbarStyles() {
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = `
+    @keyframes rotate {
+from {
+transform: rotate(0deg);
+}
+to {
+transform: rotate(360deg);
+}
+}
+.logo {
+animation: rotate 10s linear infinite
+width: 100px;
+height: 100px;
+}
+@keyframes hue-shift {
+0% { filter: hue-rotate(0deg); }
+100% { filter: hue-rotate(360deg); }
+}
+
+.hue-shift-animation {
+animation: hue-shift 10s linear infinite; /* Adjust timing and animation as needed */
+}
+        /* Custom rainbow  */
+@keyframes rainbow {
+0% { color: #ff0000; scrollbar-color: #ff0000 #0e0e0e; border-bottom-color: #ff0000; }
+14% { color: #ff7700; scrollbar-color: #ff7700 #0e0e0e; border-bottom-color: #ff7700; }
+28% { color: #ffff00; scrollbar-color: #ffff00 #0e0e0e; border-bottom-color: #ffff00; }
+42% { color: #00ff00; scrollbar-color: #00ff00 #0e0e0e; border-bottom-color: #00ff00; }
+57% { color: #0000ff; scrollbar-color: #0000ff #0e0e0e; border-bottom-color: #0000ff; }
+71% { color: #8a2be2; scrollbar-color: #8a2be2 #0e0e0e; border-bottom-color: #8a2be2; }
+85% { color: #ff00ff; scrollbar-color: #ff00ff #0e0e0e; border-bottom-color: #ff00ff; }
+100% { color: #ff0000; scrollbar-color: #ff0000 #0e0e0e; border-bottom-color: #ff0000; }
+}
+
+.rainbow-animation {
+animation: rainbow 4s linear infinite;
+}
+
+    /* Custom scrollbar styles */
+    .custom-scrollbar {
+        overflow-y: auto;
+        scrollbar-width: thin;
+        animation: rainbow 4s linear infinite;
+    }
+
+    /* For Webkit browsers */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        animation: rainbow 4s linear infinite;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+       animation: rainbow 4s linear infinite;
+        border-radius: 20px;
+        border: 3px solid #330000;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        animation: rainbow 4s linear infinite;
+    }
+
+    .disabled-button {
+    pointer-events: none;
+    opacity: 0.5; /* Make it look disabled */
+}
+
+     @keyframes flicker {
+            0% { color: red; }
+            50% { color: white; }
+            100% { color: red; }
+        }
+
+        .flicker-animation {
+            animation: flicker 3s infinite; /* Adjust timing and animation as needed */
+        }
+`;
+    document.head.appendChild(style);
+}
+      
+appendCustomScrollbarStyles();
+
+function newTab(url) {
+    window.open(url, '_blank');
+}
+
+let music = {
+    audio: new Audio("https://github.com/Snoofz/snoofz.github.io/raw/main/ThxSoMch%20-%20Hate..mp3"),
+    isPlaying: false,
+    play: function() {
+        this.audio.play();
+        this.isPlaying = true;
+    },
+    pause: function() {
+        this.audio.pause();
+        this.isPlaying = false;
+    },
+    resume: function() {
+        this.audio.play();
+        this.isPlaying = true;
+    },
+    stop: function() {
+        this.audio.pause();
+        this.audio.currentTime = 0;
+        this.isPlaying = false;
+    },
+    set volume(value) {
+        this.audio.volume = value;
+    },
+    get volume() {
+        return this.audio.volume;
+    },
+    set loop(value) {
+        this.audio.loop = value;
+    },
+    get loop() {
+        return this.audio.loop;
+    }
+};
+
+function hideOverlay() {
+    document.getElementById('overlay').style.display = 'none';
+}
+
+let uiManager = new UIManager();
+
+let messages = [
+    "Want to join my Discord? Look in the Socials Tab for more information!", 
+    "Need to contact me about something? Look in the Contact me Tab for information!",
+    "Interested in any of my projects? Take a look at the Projects Tab!",
+    "Did you know that this UI is on my GitHub?! Look in the Projects Tab for more details!",
+    "Multiplayer Piano is a good website... You should check it out!",
+    "Want to end up on the Homies Tab? Get to know me and ill consider it!"
+];
+
+let hasContinued = false;
+
+document.onclick = () => {
+    if (hasContinued) return;
+    music.volume = 0.05;
+    music.loop = true;
+    music.play();
+
+    uiManager.createNotification('Snoofz', 'Welcome to my about me!', 7000);
+    let mainMenu = uiManager.createMenu("epicUI", "", "950px", "800px");
+    uiManager.makeDraggable(mainMenu);
+    uiManager.addLogo("https://github.com/Snoofz/snoofz.github.io/blob/main/Logo.png?raw=true");
+    uiManager.addLabel(`Welcome to my ytmp3 website!`, "flicker-animation");
+
+    let tabs = uiManager.createTabMenu([
+        {
+            title: 'Converter',
+            content: '<p>This is the content of Tab 1</p>'
+        },
+        {
+            title: 'Projects',
+            content: '<p>This is the content of Tab 2</p>'
+        },
+        {
+            title: 'Socials',
+            content: '<p>This is the content of Tab 3</p>'
+        },
+        {
+            title: 'Contact Me',
+            content: '<p>This is the content of Tab 4</p>'
+        },
+        {
+            title: 'Page Settings',
+            content: '<p>This is the content of Tab 6</p>'
+        }
+    ]);
+
+    tabs = tabs.UITabs;
+
+
+    tabs[1].uiTab.addButton("Snowly Chat", () => {
+        newTab("https://snowlychat.replit.app");
+    });
+
+    tabs[1].uiTab.addButton("Discord Welcome Cards", () => {
+        newTab("https://github.com/Snoofz/WelcomeCards");
+    });
+
+    tabs[1].uiTab.addButton("Neptune (MPP Bot)", () => {
+        newTab("https://github.com/Snoofz/Neptune");
+    });
+
+    tabs[1].uiTab.addButton("Multiplayer Piano", () => {
+        newTab("https://multiplayerpiano.dev");
+    });
+
+    tabs[1].uiTab.addButton("Web UI Library", () => {
+        newTab("https://github.com/Snoofz/web-ui-library");
+    });
+
+    tabs[1].uiTab.addButton("Fancy Text To PNG", () => {
+        newTab("https://github.com/Snoofz/font-text-to-png");
+    });
+
+    tabs[1].uiTab.addButton("Vencord Theme Library", () => {
+        newTab("https://github.com/Snoofz/Vencord-Theme-Library");
+    });
+
+    tabs[2].uiTab.addButton("Twitch", () => {
+        newTab("https://www.twitch.tv/snoofzthecanine");
+    });
+
+    tabs[2].uiTab.addButton("YouTube", () => {
+        newTab("https://youtube.com/@Snoofz");
+    });
+
+    tabs[2].uiTab.addButton("SoundCloud", () => {
+        newTab("https://soundcloud.com/mxgazine");
+    });
+
+    tabs[2].uiTab.addButton("Spotify", () => {
+        newTab("https://open.spotify.com/artist/1eakHPRgfz16nPlsfNM9iD?si=EoMgymWaRry7X1st7_CMqg");
+    });
+
+    tabs[2].uiTab.addButton("Discord Server", () => {
+        newTab("https://discord.gg/hailware");
+    });
+
+    tabs[2].uiTab.addButton("Twitter", () => {
+        newTab("https://x.com/paxthefoxxo");
+    });
+
+    tabs[3].uiTab.addLabel("Discord: snoofzthefox", "flicker-animation");
+    tabs[3].uiTab.addLabel("Email: uwufoonix5@outlook.com", "flicker-animation");
+    tabs[3].uiTab.addLabel("Telegram: @foofoothefox", "flicker-animation");
+
+    tabs[4].uiTab.addSpacer(15);
+    tabs[4].uiTab.addLabel("BG Music Controls", "flicker-animation");
+    music.loop = true;
+    tabs[4].uiTab.addButton("Pause", () => {
+        if (music.isPlaying) {
+            music.pause();
+        } else {
+            uiManager.createNotification('Snoofz', 'The BG Music is already paused!', 4500);
+        }
+    });
+
+    tabs[4].uiTab.addButton("Resume", () => {
+        if (music.isPlaying) {
+            uiManager.createNotification('Snoofz', 'The BG Music is already playing!', 4500);
+        } else {
+            music.resume();
+        }
+    });
+
+    tabs[4].uiTab.addButton("Stop", () => {
+        if (music.isPlaying) {
+            music.stop();
+        } else {
+            uiManager.createNotification('Snoofz', 'No music is playing!', 4500);
+        }
+    });
+
+    tabs[4].uiTab.addButton("Play", () => {
+        if (music.isPlaying) {
+            uiManager.createNotification('Snoofz', 'The BG Music is already playing!', 4500);
+        } else {
+            music.play();
+        }
+    });
+
+    tabs[4].uiTab.addSpacer(10);
+
+    let slider = tabs[4].uiTab.addSlider(0, 1, 0.001, 0.05, "Volume", (value) => {
+        music.volume = value;
+    });
+
+    slider.value = 0.05;
+
+    setInterval(() => {
+        uiManager.createNotification('Snoofz', messages[Math.floor(Math.random() * messages.length)], 7000);
+    }, 40000);
+
+    hasContinued = true;
+
+    tabs[0].uiTab.addSpacer(15);
+    music.loop = true;
+    let youtubeUrl = "";
+    let element = tabs[0].uiTab.addTextInput("Youtube URL", () => {
+        youtubeUrl = element.value;
+    });
+
+    async function downloadFile(url, rahhh, element, g, dots) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+                clearInterval(rahhh);
+                button.innerHTML = "Convert & Download";
+                g = 0;
+                dots = '';
+                button.classList.remove("disabled-button");
+                button.removeAttribute("disabled");
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+
+            uiManager.createNotification('Success', 'Conversion was successful!', 5500);
+            clearInterval(rahhh);
+            button.innerHTML = "Convert & Download";
+            g = 0;
+            dots = '';
+            button.classList.remove("disabled-button");
+            button.removeAttribute("disabled");
+
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+
+            const contentDisposition = response.headers.get('Content-Disposition');
+            if (contentDisposition) {
+                const matches = /filename="(.+)"/.exec(contentDisposition);
+                if (matches && matches[1]) {
+                    a.download = matches[1];
+                } else {
+                    a.download = 'download.mp3';
+                }
+            } else {
+                a.download = 'download.mp3';
+            }
+
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            uiManager.createNotification('Error', 'Failed to download file.', 5500);
+            clearInterval(rahhh);
+            button.innerHTML = "Convert & Download";
+            g = 0;
+            dots = '';
+            button.classList.remove("disabled-button");
+            button.removeAttribute("disabled");
+        }
+    }
+
+    let button = tabs[0].uiTab.addButton("Convert & Download", async () => {
+        let g = 0;
+        let dots = "";
+        let rahhh = setInterval(() => {
+            if (g == 3) {
+                g = 0;
+                button.innerHTML = "";
+                dots = "";
+            }
+
+            dots += ".";
+            g++;
+            button.innerHTML = dots;
+        }, 350);
+
+        if (!youtubeUrl || !youtubeUrl.includes("youtube.com") || !youtubeUrl.includes("https://")) {
+            uiManager.createNotification('Error', 'Please enter a YouTube URL!', 5500);
+                clearInterval(rahhh);
+                button.innerHTML = "Convert & Download";
+                g = 0;
+                dots = '';
+                return;
+            }
+
+            uiManager.createNotification('Info', 'Converting Video To MP3!', 5500);
+            button.setAttribute("disabled", "true");
+            button.classList.add("disabled-button");
+
+            try {
+                downloadFile('/api/ytmp3?url=' + youtubeUrl, rahhh, button, g, dots);
+            } catch (error) {
+                console.error('Error:', error);
+                uiManager.createNotification('Error', 'Failed to convert video to MP3', 5500);
+                clearInterval(rahhh);
+                button.innerHTML = "Convert & Download";
+                g = 0;
+                dots = '';
+                button.classList.remove("disabled-button");
+                button.removeAttribute("disabled");
+            }
+    });
+    hasContinued = true;
+}
+  </script>
+    </body>
+</html>
