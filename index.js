@@ -7,7 +7,7 @@ const sanitize = require('sanitize-filename');
 const app = express();
 const PORT = process.env.PORT || 8774;
 
-const ytDlpPath = './yt-dlp_linux';
+const ytDlpPath = './yt-dlp';
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
