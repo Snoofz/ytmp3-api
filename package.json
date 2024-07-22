@@ -10,6 +10,7 @@
     "ytdl-core": "^4.11.5"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "install-yt-dlp": "sh install-yt-dlp.sh"
   }
 }
